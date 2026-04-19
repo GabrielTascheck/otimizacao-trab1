@@ -47,161 +47,202 @@ Ex entrada
 // Colocar em outro arquivo!?
 struct limiteComp
 {
-        int componente;
-        int limite;
+        size_t componente;
+        size_t limite;
 };
+
+int gera_arquivo(size_t c, size_t p, size_t *q, size_t **r, size_t k, struct limiteComp *fl)
+{
+    FILE *arq = fopen("lp_solve", "w+");
+
+    fprintf(arq, "min : ");
+
+    for(size_t i = 0; i < p - 1; i++) {
+        fprintf(arq, "%zux%zu + ", r[i][c], i + 1);
+    }
+    fprintf(arq, "%zux%zu;\n", r[p - 1][c], p - 1);
+
+    for(size_t i = 0; i < c; i++) {
+        for(size_t j = 0; j < p - 1; j++) {
+            fprintf(arq, "%zux%zu + ", r[j][i], j + 1);
+        }
+        fprintf(arq, "%zux%zu >= %zu;\n", r[p - 1][i], p - 1, q[i]);
+    }
+
+    for(size_t i = 0; i < k; i++) {
+        for(size_t j = 0; j < p - 1; j++) {
+            fprintf(arq, "%zux%zu + ", r[j][fl[i].componente - 1], j + 1);
+        }
+        fprintf(arq, "%zux%zu <= %zu;\n", r[p - 1][i], p - 1, fl[i].limite);
+    }
+
+    return 0;
+}
 
 int main()
 {
+    size_t c, p; // # Componentes / # Comprimidos
+    scanf("%zu %zu", &c, &p);
 
-        int c, p; // # Componentes / # Comprimidos
-        scanf("%d %d", &c, &p);
+    
+    if (c < 1 || p < 1)
+    {
+        fprintf(stderr, "\nC ou P menores que 1");
+        return 1;
+    }
+    
 
+    size_t q[c]; // Quantidade diária para cada componente
+
+    for (size_t i = 0; i < c; i++)
+    {
+        scanf("%zu", &q[i]);
         
-        if (c < 1 || p < 1)
+        if (q[i] < 0)
         {
-                fprintf(stderr, "\nC ou P menores que 1");
+            fprintf(stderr, "\nQuantidade diária negativa");
+            return 1;
+        }
+        
+    }
+
+    size_t **r;
+    r = malloc(p * sizeof(size_t *));
+    r[0] = malloc(p * (c + 1) * sizeof(size_t *));
+    for(size_t i = 1; i < p; i++) {
+        r[i] = r[0] + i * (c + 1);
+    }
+
+    // Usar ponteiro?
+    // size_t r[p][c + 1]; // Quanto cada remedio tem de cada componente
+    for (size_t i = 0; i < p; i++)
+    {
+        for (size_t j = 0; j <= c; j++)
+        {
+            scanf("%zu", &r[i][j]);
+            
+            if (r[i][j] < 0)
+            {
+                fprintf(stderr, "\nComprimido tem quantidade negativa de componente");
                 return 1;
-        }
-        
-
-        int q[c]; // Quantidade diária para cada componente
-
-        for (size_t i = 0; i < c; i++)
-        {
-                scanf("%d", &q[i]);
-                
-                if (q[i] < 0)
-                {
-                        fprintf(stderr, "\nQuantidade diária negativa");
-                        return 1;
-                }
+            }
                 
         }
+    }
 
-        // Usar ponteiro?
-        int r[p][c + 1]; // Quanto cada remedio tem de cada componente
-        for (size_t i = 0; i < p; i++)
+    size_t k; // qntd componentes limitados
+    scanf("%zu", &k);
+    
+
+    if (k > c)
+    {
+        fprintf(stderr, "\nK Maior que C");
+        return 1;
+    }
+    
+
+    struct limiteComp fl[k]; // Qual componente e qual seu limite
+    size_t limite, componente;
+
+    for (size_t i = 0; i < k; i++)
+    {
+        scanf("%zu %zu", &componente, &limite);
+        
+        if (componente > c || componente < 1)
         {
-                for (size_t j = 0; j <= c; j++)
-                {
-                        scanf("%d", &r[i][j]);
-                        
-                        if (r[i][j] < 0)
-                        {
-                                fprintf(stderr, "\nComprimido tem quantidade negativa de componente");
-                                return 1;
-                        }
-                        
-                }
+            fprintf(stderr, "\nComponente inválido");
+            return 1;
         }
 
-        int k; // qntd componentes limitados
-        scanf("%d", &k);
-        
-
-        if (k > c)
+        if (limite < q[componente - 1]) // limite < quantidade diária
         {
-                fprintf(stderr, "\nK Maior que C");
-                return 1;
-        }
-        
-
-        struct limiteComp fl[k]; // Qual componente e qual seu limite
-
-        for (size_t i = 0; i < k; i++)
-        {
-                int limite, componente;
-                scanf("%d %d", &componente, &limite);
-                
-                if (componente > c || componente < 1)
-                {
-                        fprintf(stderr, "\nComponente inválido");
-                        return 1;
-                }
-
-                if (limite < q[componente - 1]) // limite < quantidade diária
-                {
-                        fprintf(stderr, "\nLimite inviável");
-                        return 1;
-                }
-                
-
-                fl[i].limite = limite;
-                fl[i].componente = componente;
-        }
-
-        // Não sei como verificar se existe solução para uma certa entrada!!
-
-        
-        // Vendo se algum comprimido tem o x componente
-        for (size_t i = 0; i < c; i++)
-        {
-                if (q[i] == 0)
-                continue;
-                int flag = 1;
-                for (size_t j = 0; j < p && flag; j++)
-                {
-                        if (r[j][i] > 0 && r[j][i] <= q[i])
-                        flag = 0;
-                }
-                if (flag)
-                {
-                        fprintf(stderr, "\nNão há comprimido que solucione o componente %zu", i + 1);
-                        return 1;
-                }
+            fprintf(stderr, "\nLimite inviável");
+            return 1;
         }
         
 
-        /*==================================================================================*/
-        // Vendo se os dados entraram certo
+        fl[i].limite = limite;
+        fl[i].componente = componente;
+    }
 
-        // 1. Tabela de Necessidades Diárias [cite: 25, 31]
-        printf("\n=== Necessidades Diárias ===\n");
-        printf("%-12s | %-17s\n", "Componente", "Quantidade Diária");
-        printf("-------------|------------------\n");
-        for (size_t i = 0; i < c; i++)
+    // Não sei como verificar se existe solução para uma certa entrada!!
+
+    
+    // Vendo se algum comprimido tem o x componente
+    for (size_t i = 0; i < c; i++)
+    {
+        if (q[i] == 0)
+        continue;
+        int flag = 1;
+        for (size_t j = 0; j < p && flag; j++)
         {
-                // %-12zu alinha o índice à esquerda com 12 espaços
-                // %-17d alinha a quantidade à esquerda com 17 espaços
-                printf("C%-11zu | %-17d\n", i + 1, q[i]);
+            if (r[j][i] > 0 && r[j][i] <= q[i])
+            flag = 0;
         }
-
-        // 2. Tabela de Composição dos Comprimidos
-        printf("\n=== Tabela de Comprimidos ===\n");
-
-        // Cabeçalho Dinâmico
-        printf("%-11s", "Comprimido");
-        for (size_t i = 0; i < c; i++)
+        if (flag)
         {
-                printf(" | Comp. %-2zu", i + 1);
+            fprintf(stderr, "\nNão há comprimido que solucione o componente %zu", i + 1);
+            return 1;
         }
-        printf(" | %-7s\n", "Preço");
+    }
 
-        // Linha separadora dinâmica (opcional, mas ajuda visualmente)
-        printf("------------");
-        for (size_t i = 0; i < c; i++)
-                printf("+----------");
-        printf("+----------\n");
+    gera_arquivo(c, p, q, r, k, fl);
+    printf("\n");
+    
 
-        // Dados dos Comprimidos
-        for (size_t i = 0; i < p; i++)
+    /*==================================================================================*/
+    // Vendo se os dados entraram certo
+
+    // 1. Tabela de Necessidades Diárias [cite: 25, 31]
+    printf("\n=== Necessidades Diárias ===\n");
+    printf("%-12s | %-17s\n", "Componente", "Quantidade Diária");
+    printf("-------------|------------------\n");
+    for (size_t i = 0; i < c; i++)
+    {
+        // %-12zu alinha o índice à esquerda com 12 espaços
+        // %-17d alinha a quantidade à esquerda com 17 espaços
+        printf("C%-11zu | %-17zu\n", i + 1, q[i]);
+    }
+
+    // 2. Tabela de Composição dos Comprimidos
+    printf("\n=== Tabela de Comprimidos ===\n");
+
+    // Cabeçalho Dinâmico
+    printf("%-11s", "Comprimido");
+    for (size_t i = 0; i < c; i++)
+    {
+        printf(" | Comp. %-2zu", i + 1);
+    }
+    printf(" | %-7s\n", "Preço");
+
+    // Linha separadora dinâmica (opcional, mas ajuda visualmente)
+    printf("------------");
+    for (size_t i = 0; i < c; i++)
+            printf("+----------");
+    printf("+----------\n");
+
+    // Dados dos Comprimidos
+    for (size_t i = 0; i < p; i++)
+    {
+        printf("%-11zu", i + 1); // Índice do comprimido
+        for (size_t j = 0; j < c; j++)
         {
-                printf("%-11zu", i + 1); // Índice do comprimido
-                for (size_t j = 0; j < c; j++)
-                {
-                        printf(" | %-8d", r[i][j]); // Quantidade de cada componente
-                }
-                printf(" | %-7d\n", r[i][c]); // Preço (última coluna) [cite: 33]
+            printf(" | %-8zu", r[i][j]); // Quantidade de cada componente
         }
+        printf(" | %-7zu\n", r[i][c]); // Preço (última coluna) [cite: 33]
+    }
 
-        // 3. Tabela de Restrições (Componentes Limitados) [cite: 25, 35]
-        printf("\n=== Componentes Limitados ===\n");
-        printf("%-12s | %-10s\n", "Índice (f)", "Limite (l)");
-        printf("------------|------------\n");
-        for (size_t i = 0; i < k; i++)
-        {
-                printf("C%-10d | %-10d\n", fl[i].componente, fl[i].limite);
-        }
-        return 0;
+    // 3. Tabela de Restrições (Componentes Limitados) [cite: 25, 35]
+    printf("\n=== Componentes Limitados ===\n");
+    printf("%-12s | %-10s\n", "Índice (f)", "Limite (l)");
+    printf("------------|------------\n");
+    for (size_t i = 0; i < k; i++)
+    {
+        printf("C%-10zu | %-10zu\n", fl[i].componente, fl[i].limite);
+    }
+
+    free(r[0]);
+    free(r);
+
+    return 0;
 }

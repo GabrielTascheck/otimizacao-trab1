@@ -60,23 +60,28 @@ int gera_arquivo(size_t c, size_t p, size_t *q, size_t **r, size_t k, struct lim
     for(size_t i = 0; i < p - 1; i++) {
         fprintf(arq, "%zux%zu + ", r[i][c], i + 1);
     }
-    fprintf(arq, "%zux%zu;\n", r[p - 1][c], p - 1);
+    fprintf(arq, "%zux%zu;\n", r[p - 1][c], p);
 
     for(size_t i = 0; i < c; i++) {
         for(size_t j = 0; j < p - 1; j++) {
             fprintf(arq, "%zux%zu + ", r[j][i], j + 1);
         }
-        fprintf(arq, "%zux%zu >= %zu;\n", r[p - 1][i], p - 1, q[i]);
+        fprintf(arq, "%zux%zu >= %zu;\n", r[p - 1][i], p, q[i]);
     }
 
     for(size_t i = 0; i < k; i++) {
         for(size_t j = 0; j < p - 1; j++) {
             fprintf(arq, "%zux%zu + ", r[j][fl[i].componente - 1], j + 1);
         }
-        fprintf(arq, "%zux%zu <= %zu;\n", r[p - 1][i], p - 1, fl[i].limite);
+        fprintf(arq, "%zux%zu <= %zu;\n", r[p - 1][fl[i].componente - 1], p, fl[i].limite);
     }
 
     return 0;
+}
+
+void le_dados(size_t *c, size_t *p, size_t *q, size_t **r, size_t *k, struct limiteComp *fl)
+{
+
 }
 
 int main()

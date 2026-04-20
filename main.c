@@ -91,62 +91,40 @@ void le_dados(size_t *c, size_t *p, size_t **q, size_t ***r, size_t *k, struct l
         (*r)[i] = (*r)[0] + i * (*c + 1);
     }
 
-    if (*c < 1 || *p < 1)
-    {
+    if(*c < 1 || *p < 1) {
         fprintf(stderr, "\nC ou P menores que 1");
         exit(1);
     }
 
-    for (size_t i = 0; i < *c; i++)
-    {
+    for(size_t i = 0; i < *c; i++) {
         scanf("%zu", &(*q)[i]);
-        
-        if ((*q)[i] < 0)
-        {
-            fprintf(stderr, "\nQuantidade diária negativa");
-            exit(1);
-        }
-        
     }
 
-    for (size_t i = 0; i < *p; i++)
-    {
-        for (size_t j = 0; j <= *c; j++)
-        {
+    for(size_t i = 0; i < *p; i++) {
+        for(size_t j = 0; j <= *c; j++) {
             scanf("%zu", &(*r)[i][j]);
-            
-            if ((*r)[i][j] < 0)
-            {
-                fprintf(stderr, "\nComprimido tem quantidade negativa de componente");
-                exit(1);
-            }
-                
         }
     }
 
     scanf("%zu", k);
     *fl = malloc(*k * sizeof(struct limiteComp));
 
-    if (*k > *c)
-    {
+    if(*k > *c) {
         fprintf(stderr, "\nK Maior que C");
         exit(1);
     }
     
     size_t limite, componente;
 
-    for (size_t i = 0; i < *k; i++)
-    {
+    for(size_t i = 0; i < *k; i++) {
         scanf("%zu %zu", &componente, &limite);
         
-        if (componente > *c || componente < 1)
-        {
+        if(componente > *c || componente < 1) {
             fprintf(stderr, "\nComponente inválido");
             exit(1);
         }
 
-        if (limite < (*q)[componente - 1]) // limite < quantidade diária
-        {
+        if(limite < (*q)[componente - 1]) { // limite < quantidade diária
             fprintf(stderr, "\nLimite inviável");
             exit(1);
         }
@@ -159,18 +137,15 @@ void le_dados(size_t *c, size_t *p, size_t **q, size_t ***r, size_t *k, struct l
     
     // Vendo se algum comprimido tem o x componente
     int flag = 1;
-    for (size_t i = 0; i < *c; i++)
-    {
-        if ((*q)[i] == 0)
+    for(size_t i = 0; i < *c; i++) {
+        if((*q)[i] == 0)
             continue;
         flag = 1;
-        for (size_t j = 0; j < *p && flag; j++)
-        {
-            if ((*r)[j][i] > 0 && (*r)[j][i] <= (*q)[i])
+        for(size_t j = 0; j < *p && flag; j++) {
+            if((*r)[j][i] > 0 && (*r)[j][i] <= (*q)[i])
             flag = 0;
         }
-        if (flag)
-        {
+        if(flag) {
             fprintf(stderr, "\nNão há comprimido que solucione o componente %zu", i + 1);
             exit(1);
         }
@@ -184,8 +159,7 @@ void print_dados(size_t c, size_t p, size_t *q, size_t **r, size_t k, struct lim
     printf("=== Necessidades Diárias ===\n");
     printf("%-12s | %-17s\n", "Componente", "Quantidade Diária");
     printf("-------------|------------------\n");
-    for (size_t i = 0; i < c; i++)
-    {
+    for(size_t i = 0; i < c; i++) {
         // %-12zu alinha o índice à esquerda com 12 espaços
         // %-17d alinha a quantidade à esquerda com 17 espaços
         printf("C%-11zu | %-17zu\n", i + 1, q[i]);
@@ -196,24 +170,21 @@ void print_dados(size_t c, size_t p, size_t *q, size_t **r, size_t k, struct lim
 
     // Cabeçalho Dinâmico
     printf("%-11s", "Comprimido");
-    for (size_t i = 0; i < c; i++)
-    {
+    for(size_t i = 0; i < c; i++) {
         printf(" | Comp. %-2zu", i + 1);
     }
     printf(" | %-7s\n", "Preço");
 
     // Linha separadora dinâmica (opcional, mas ajuda visualmente)
     printf("------------");
-    for (size_t i = 0; i < c; i++)
-            printf("+----------");
+    for(size_t i = 0; i < c; i++)
+        printf("+----------");
     printf("+----------\n");
 
     // Dados dos Comprimidos
-    for (size_t i = 0; i < p; i++)
-    {
+    for(size_t i = 0; i < p; i++) {
         printf("%-11zu", i + 1); // Índice do comprimido
-        for (size_t j = 0; j < c; j++)
-        {
+        for (size_t j = 0; j < c; j++) {
             printf(" | %-8zu", r[i][j]); // Quantidade de cada componente
         }
         printf(" | %-7zu\n", r[i][c]); // Preço (última coluna) [cite: 33]
@@ -223,8 +194,7 @@ void print_dados(size_t c, size_t p, size_t *q, size_t **r, size_t k, struct lim
     printf("\n=== Componentes Limitados ===\n");
     printf("%-12s | %-10s\n", "Índice (f)", "Limite (l)");
     printf("------------|------------\n");
-    for (size_t i = 0; i < k; i++)
-    {
+    for(size_t i = 0; i < k; i++) {
         printf("C%-10zu | %-10zu\n", fl[i].componente, fl[i].limite);
     }
 }
@@ -239,9 +209,8 @@ int main()
 
     le_dados(&c, &p, &q, &r, &k, &fl);
 
-    print_dados(c, p, q, r, k, fl);
+    // print_dados(c, p, q, r, k, fl);
 
-    puts("\n\n");
     print_PL(c, p, q, r, k, fl);
     
 

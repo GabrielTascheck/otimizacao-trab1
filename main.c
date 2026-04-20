@@ -1,17 +1,17 @@
 #include <stdio.h>
 #include <stdlib.h>
-// Entrada: Inicia com 2 n´umeros inteiros c e p indicando a quantidade de
+// Entrada: Inicia com 2 números inteiros c e p indicando a quantidade de
 // componentes e a quantidade de tipos de comprimidos, respectivamente.
-// Em seguida temos uma linha com c n´umeros inteiros indicando as quan-
-// tidades di´arias necess´arias de cada componente, q1, q2, . . . , qc.
+// Em seguida temos uma linha com c números inteiros indicando as quan-
+// tidades diárias necessárias de cada componente, q1, q2, . . . , qc.
 // Em seguida temos p linhas, cada uma com os dados de um tipo de
-// comprimido. Cada comprimido i ´e descrito com c + 1 n´umeros inteiros,
+// comprimido. Cada comprimido i é descrito com c + 1 números inteiros,
 // sendo ri,1, ri,2, . . . , ri,c as quantidades de cada componente presentes no
-// comprimido e vi o seu pre¸co, com i = 1, 2, . . . , p.
+// comprimido e vi o seu preço, com i = 1, 2, . . . , p.
 // 2
-// Em seguida ´e dado um n´umero inteiro k indicando a quantidade de com-
-// ponentes limitados, seguido de k linhas com 2 n´umeros inteiros cada,
-// fi e li, indicando o ´ındice e o limite do i-´esimo componente limitado,
+// Em seguida é dado um número inteiro k indicando a quantidade de com-
+// ponentes limitados, seguido de k linhas com 2 números inteiros cada,
+// fi e li, indicando o índice e o limite do i-ésimo componente limitado,
 // com i = 1, 2, . . . , k.
 
 /*
@@ -44,162 +44,144 @@ Ex entrada
 
 */
 
-// Colocar em outro arquivo!?
 struct limiteComp
 {
         size_t componente;
         size_t limite;
 };
 
-int gera_arquivo(size_t c, size_t p, size_t *q, size_t **r, size_t k, struct limiteComp *fl)
+// Imprime o PL formado a partir dos dados de entrada
+int print_PL(size_t c, size_t p, size_t *q, size_t **r, size_t k, struct limiteComp *fl)
 {
-    FILE *arq = fopen("lp_solve", "w+");
-
-    fprintf(arq, "min : ");
+    fprintf(stdout, "min : ");
 
     for(size_t i = 0; i < p - 1; i++) {
-        fprintf(arq, "%zux%zu + ", r[i][c], i + 1);
+        fprintf(stdout, "%zux%zu + ", r[i][c], i + 1);
     }
-    fprintf(arq, "%zux%zu;\n", r[p - 1][c], p);
+    fprintf(stdout, "%zux%zu;\n", r[p - 1][c], p);
 
     for(size_t i = 0; i < c; i++) {
         for(size_t j = 0; j < p - 1; j++) {
-            fprintf(arq, "%zux%zu + ", r[j][i], j + 1);
+            fprintf(stdout, "%zux%zu + ", r[j][i], j + 1);
         }
-        fprintf(arq, "%zux%zu >= %zu;\n", r[p - 1][i], p, q[i]);
+        fprintf(stdout, "%zux%zu >= %zu;\n", r[p - 1][i], p, q[i]);
     }
 
     for(size_t i = 0; i < k; i++) {
         for(size_t j = 0; j < p - 1; j++) {
-            fprintf(arq, "%zux%zu + ", r[j][fl[i].componente - 1], j + 1);
+            fprintf(stdout, "%zux%zu + ", r[j][fl[i].componente - 1], j + 1);
         }
-        fprintf(arq, "%zux%zu <= %zu;\n", r[p - 1][fl[i].componente - 1], p, fl[i].limite);
+        fprintf(stdout, "%zux%zu <= %zu;\n", r[p - 1][fl[i].componente - 1], p, fl[i].limite);
     }
 
     return 0;
 }
 
-void le_dados(size_t *c, size_t *p, size_t *q, size_t **r, size_t *k, struct limiteComp *fl)
+// Lê os dados de entrada e verifica casos de inviabilidade
+void le_dados(size_t *c, size_t *p, size_t **q, size_t ***r, size_t *k, struct limiteComp **fl)
 {
+    scanf("%zu %zu", c, p);
 
-}
+    *q = malloc(*c * sizeof(size_t));
 
-int main()
-{
-    size_t c, p; // # Componentes / # Comprimidos
-    scanf("%zu %zu", &c, &p);
+    // Aloca matriz r dinamicamente
+    *r = malloc(*p * sizeof(size_t *));
+    (*r)[0] = malloc(*p * (*c + 1) * sizeof(size_t));
+    for(size_t i = 1; i < *p; i++) {
+        (*r)[i] = (*r)[0] + i * (*c + 1);
+    }
 
-    
-    if (c < 1 || p < 1)
+    if (*c < 1 || *p < 1)
     {
         fprintf(stderr, "\nC ou P menores que 1");
-        return 1;
+        exit(1);
     }
-    
 
-    size_t q[c]; // Quantidade diária para cada componente
-
-    for (size_t i = 0; i < c; i++)
+    for (size_t i = 0; i < *c; i++)
     {
-        scanf("%zu", &q[i]);
+        scanf("%zu", &(*q)[i]);
         
-        if (q[i] < 0)
+        if ((*q)[i] < 0)
         {
             fprintf(stderr, "\nQuantidade diária negativa");
-            return 1;
+            exit(1);
         }
         
     }
 
-    size_t **r;
-    r = malloc(p * sizeof(size_t *));
-    r[0] = malloc(p * (c + 1) * sizeof(size_t *));
-    for(size_t i = 1; i < p; i++) {
-        r[i] = r[0] + i * (c + 1);
-    }
-
-    // Usar ponteiro?
-    // size_t r[p][c + 1]; // Quanto cada remedio tem de cada componente
-    for (size_t i = 0; i < p; i++)
+    for (size_t i = 0; i < *p; i++)
     {
-        for (size_t j = 0; j <= c; j++)
+        for (size_t j = 0; j <= *c; j++)
         {
-            scanf("%zu", &r[i][j]);
+            scanf("%zu", &(*r)[i][j]);
             
-            if (r[i][j] < 0)
+            if ((*r)[i][j] < 0)
             {
                 fprintf(stderr, "\nComprimido tem quantidade negativa de componente");
-                return 1;
+                exit(1);
             }
                 
         }
     }
 
-    size_t k; // qntd componentes limitados
-    scanf("%zu", &k);
-    
+    scanf("%zu", k);
+    *fl = malloc(*k * sizeof(struct limiteComp));
 
-    if (k > c)
+    if (*k > *c)
     {
         fprintf(stderr, "\nK Maior que C");
-        return 1;
+        exit(1);
     }
     
-
-    struct limiteComp fl[k]; // Qual componente e qual seu limite
     size_t limite, componente;
 
-    for (size_t i = 0; i < k; i++)
+    for (size_t i = 0; i < *k; i++)
     {
         scanf("%zu %zu", &componente, &limite);
         
-        if (componente > c || componente < 1)
+        if (componente > *c || componente < 1)
         {
             fprintf(stderr, "\nComponente inválido");
-            return 1;
+            exit(1);
         }
 
-        if (limite < q[componente - 1]) // limite < quantidade diária
+        if (limite < (*q)[componente - 1]) // limite < quantidade diária
         {
             fprintf(stderr, "\nLimite inviável");
-            return 1;
+            exit(1);
         }
         
 
-        fl[i].limite = limite;
-        fl[i].componente = componente;
+        (*fl)[i].limite = limite;
+        (*fl)[i].componente = componente;
     }
-
-    // Não sei como verificar se existe solução para uma certa entrada!!
 
     
     // Vendo se algum comprimido tem o x componente
-    for (size_t i = 0; i < c; i++)
+    int flag = 1;
+    for (size_t i = 0; i < *c; i++)
     {
-        if (q[i] == 0)
-        continue;
-        int flag = 1;
-        for (size_t j = 0; j < p && flag; j++)
+        if ((*q)[i] == 0)
+            continue;
+        flag = 1;
+        for (size_t j = 0; j < *p && flag; j++)
         {
-            if (r[j][i] > 0 && r[j][i] <= q[i])
+            if ((*r)[j][i] > 0 && (*r)[j][i] <= (*q)[i])
             flag = 0;
         }
         if (flag)
         {
             fprintf(stderr, "\nNão há comprimido que solucione o componente %zu", i + 1);
-            return 1;
+            exit(1);
         }
     }
+}
 
-    gera_arquivo(c, p, q, r, k, fl);
-    printf("\n");
-    
-
-    /*==================================================================================*/
-    // Vendo se os dados entraram certo
-
+// Imprime tabelas com dados de entrada
+void print_dados(size_t c, size_t p, size_t *q, size_t **r, size_t k, struct limiteComp *fl)
+{
     // 1. Tabela de Necessidades Diárias [cite: 25, 31]
-    printf("\n=== Necessidades Diárias ===\n");
+    printf("=== Necessidades Diárias ===\n");
     printf("%-12s | %-17s\n", "Componente", "Quantidade Diária");
     printf("-------------|------------------\n");
     for (size_t i = 0; i < c; i++)
@@ -245,9 +227,28 @@ int main()
     {
         printf("C%-10zu | %-10zu\n", fl[i].componente, fl[i].limite);
     }
+}
+
+int main()
+{
+    size_t c, p;           // # Componentes / # Comprimidos
+    size_t *q;             // Quantidade diária para cada componente
+    size_t **r;            // Quanto cada remedio tem de cada componente
+    size_t k;              // qntd componentes limitados
+    struct limiteComp *fl; // Qual componente e qual seu limite
+
+    le_dados(&c, &p, &q, &r, &k, &fl);
+
+    print_dados(c, p, q, r, k, fl);
+
+    puts("\n\n");
+    print_PL(c, p, q, r, k, fl);
+    
 
     free(r[0]);
     free(r);
+    free(q);
+    free(fl);
 
     return 0;
 }

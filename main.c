@@ -83,7 +83,6 @@ void le_dados(size_t *c, size_t *p, size_t **q, size_t ***r, size_t *k, struct l
     scanf("%zu %zu", c, p);
 
     *q = malloc(*c * sizeof(size_t));
-
     // Aloca matriz r dinamicamente
     *r = malloc(*p * sizeof(size_t *));
     (*r)[0] = malloc(*p * (*c + 1) * sizeof(size_t));
@@ -92,7 +91,7 @@ void le_dados(size_t *c, size_t *p, size_t **q, size_t ***r, size_t *k, struct l
     }
 
     if(*c < 1 || *p < 1) {
-        fprintf(stderr, "\nC ou P menores que 1");
+        fprintf(stderr, "\nC ou P menores que 1\n");
         exit(1);
     }
 
@@ -110,7 +109,7 @@ void le_dados(size_t *c, size_t *p, size_t **q, size_t ***r, size_t *k, struct l
     *fl = malloc(*k * sizeof(struct limiteComp));
 
     if(*k > *c) {
-        fprintf(stderr, "\nK Maior que C");
+        fprintf(stderr, "\nK Maior que C\n");
         exit(1);
     }
     
@@ -120,12 +119,12 @@ void le_dados(size_t *c, size_t *p, size_t **q, size_t ***r, size_t *k, struct l
         scanf("%zu %zu", &componente, &limite);
         
         if(componente > *c || componente < 1) {
-            fprintf(stderr, "\nComponente inválido");
+            fprintf(stderr, "\nComponente inválido\n");
             exit(1);
         }
 
         if(limite < (*q)[componente - 1]) { // limite < quantidade diária
-            fprintf(stderr, "\nLimite inviável");
+            fprintf(stderr, "\nLimite inviável\n");
             exit(1);
         }
         
@@ -146,7 +145,7 @@ void le_dados(size_t *c, size_t *p, size_t **q, size_t ***r, size_t *k, struct l
             flag = 0;
         }
         if(flag) {
-            fprintf(stderr, "\nNão há comprimido que solucione o componente %zu", i + 1);
+            fprintf(stderr, "\nNão há comprimido que solucione o componente %zu\n", i + 1);
             exit(1);
         }
     }
